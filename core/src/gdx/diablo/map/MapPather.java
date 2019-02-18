@@ -1,6 +1,5 @@
 package gdx.diablo.map;
 
-import com.badlogic.gdx.ai.pfa.GraphPath;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.ObjectFloatMap;
@@ -14,12 +13,12 @@ public class MapPather {
     this.map = map;
   }
 
-  public boolean path(Vector3 src, Vector3 dst, GraphPath<Point2> path) {
+  public boolean path(Vector3 src, Vector3 dst, Path path) {
     if (src.dst(dst) > 25f) return false;
     return path(new Point2(src), new Point2(dst), path);
   }
 
-  public boolean path(Point2 src, Point2 dst, GraphPath<Point2> path) {
+  public boolean path(Point2 src, Point2 dst, Path path) {
     path.clear();
     Map.Zone zone = map.getZone(dst.x, dst.y);
     if (zone == null || zone.flags(dst.x, dst.y) != 0) return false;
@@ -70,11 +69,11 @@ public class MapPather {
     return false;
   }
 
-  private void buildPath(Point2 src, ObjectMap<Point2, Point2> cameFrom, GraphPath<Point2> path) {
-    path.add(src);
+  private void buildPath(Point2 src, ObjectMap<Point2, Point2> cameFrom, Path path) {
+    //path.append(src);
     while (cameFrom.containsKey(src)) {
       src = cameFrom.get(src);
-      path.add(src);
+      path.append(src);
     }
   }
 

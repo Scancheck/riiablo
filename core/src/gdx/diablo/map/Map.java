@@ -3,7 +3,6 @@ package gdx.diablo.map;
 import com.google.common.base.Preconditions;
 
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.ai.pfa.GraphPath;
 import com.badlogic.gdx.assets.AssetDescriptor;
 import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.graphics.Color;
@@ -545,7 +544,7 @@ public class Map implements Disposable {
     }
   }
 
-  public boolean path(Vector3 src, Vector3 dst, GraphPath<Point2> path) {
+  public boolean path(Vector3 src, Vector3 dst, Path path) {
     //return new MapGraph(this).path(src, dst);
     //return MapUtils.path(this, src, dst, new DefaultGraphPath<MapUtils.Point2>());
     //long start = System.currentTimeMillis();

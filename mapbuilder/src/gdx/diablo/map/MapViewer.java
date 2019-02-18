@@ -6,8 +6,6 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputAdapter;
 import com.badlogic.gdx.InputMultiplexer;
-import com.badlogic.gdx.ai.pfa.DefaultGraphPath;
-import com.badlogic.gdx.ai.pfa.GraphPath;
 import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.backends.lwjgl.LwjglApplication;
 import com.badlogic.gdx.backends.lwjgl.LwjglApplicationConfiguration;
@@ -77,7 +75,7 @@ public class MapViewer extends ApplicationAdapter {
 
   Vector3 src;
   Vector3 dst;
-  GraphPath<Point2> path = new DefaultGraphPath<>();
+  Path    path = new Path();
 
   boolean drawCrosshair;
   boolean drawGrid;

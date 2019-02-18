@@ -3,8 +3,6 @@ package gdx.diablo.entity;
 import android.support.annotation.CallSuper;
 
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.ai.pfa.DefaultGraphPath;
-import com.badlogic.gdx.ai.pfa.GraphPath;
 import com.badlogic.gdx.assets.AssetDescriptor;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.Batch;
@@ -29,7 +27,7 @@ import gdx.diablo.graphics.PaletteIndexedColorDrawable;
 import gdx.diablo.map.DS1;
 import gdx.diablo.map.DT1.Tile;
 import gdx.diablo.map.Map;
-import gdx.diablo.map.Point2;
+import gdx.diablo.map.Path;
 import gdx.diablo.widget.Label;
 
 public class Entity {
@@ -130,7 +128,7 @@ public class Entity {
   Label label;
   String name;
   Vector3 target = new Vector3();
-  GraphPath<Point2> path = new DefaultGraphPath<>();
+  Path path = new Path();
 
   public static Entity create(DS1 ds1, DS1.Object obj) {
     final int type = obj.type;
@@ -224,11 +222,11 @@ public class Entity {
     return target;
   }
 
-  public GraphPath<Point2> path() {
+  public Path path() {
     return path;
   }
 
-  public void updatePath(Map map, Vector3 target) {
+  public void setPath(Map map, Vector3 target) {
     map.path(position, target, path);
   }
 
