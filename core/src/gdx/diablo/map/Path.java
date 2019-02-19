@@ -5,7 +5,7 @@ import com.badlogic.gdx.utils.Array;
 import java.util.Iterator;
 
 public class Path implements Iterable<Point2> {
-  public final Array<Point2> nodes = new Array<>();
+  public final Array<Point2> nodes = new Array<>(32);
 
   public void clear() {
     // TODO: maybe nodes.size = 0 is enough
@@ -26,6 +26,11 @@ public class Path implements Iterable<Point2> {
 
   @Override
   public Iterator<Point2> iterator() {
-    return nodes.iterator();
+    return new Array.ArrayIterator<>(nodes);
+  }
+
+  @Override
+  public String toString() {
+    return nodes.toString();
   }
 }

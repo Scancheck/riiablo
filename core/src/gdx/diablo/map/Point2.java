@@ -18,6 +18,11 @@ public class Point2 extends BinaryHeap.Node {
     this((int) src.x, (int) src.y, 0);
   }
 
+  public void copyTo(Vector3 dst) {
+    dst.x = x;
+    dst.y = y;
+  }
+
   private int hash() {
     return 31 * x + y;
   }
@@ -44,5 +49,10 @@ public class Point2 extends BinaryHeap.Node {
     final float dx = dst.x - src.x;
     final float dy = dst.y - src.y;
     return (float) Math.sqrt(dx * dx + dy * dy);
+  }
+
+  @Override
+  public String toString() {
+    return "(" + x + "," + y + ")";
   }
 }

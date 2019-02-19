@@ -15,6 +15,8 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.Iterator;
 
 import gdx.diablo.Diablo;
 import gdx.diablo.codec.Animation;
@@ -28,6 +30,7 @@ import gdx.diablo.map.DS1;
 import gdx.diablo.map.DT1.Tile;
 import gdx.diablo.map.Map;
 import gdx.diablo.map.Path;
+import gdx.diablo.map.Point2;
 import gdx.diablo.widget.Label;
 
 public class Entity {
@@ -38,6 +41,8 @@ public class Entity {
   private static final boolean DEBUG_DIRTY      = DEBUG && true;
   private static final boolean DEBUG_ASSETS     = DEBUG && true;
   private static final boolean DEBUG_STATE      = DEBUG && true;
+  private static final boolean DEBUG_PATH       = DEBUG && true;
+  private static final boolean DEBUG_TARGET     = DEBUG && true;
 
   protected enum EntType {
     OBJECT("OBJECTS"),
@@ -129,6 +134,8 @@ public class Entity {
   String name;
   Vector3 target = new Vector3();
   Path path = new Path();
+  Iterator<Point2> targets = Collections.emptyIterator();
+  float traveled;
 
   public static Entity create(DS1 ds1, DS1.Object obj) {
     final int type = obj.type;
@@ -226,8 +233,77 @@ public class Entity {
     return path;
   }
 
-  public void setPath(Map map, Vector3 target) {
-    map.path(position, target, path);
+  public void setPath(Map map, Vector3 dst) {
+    boolean success = map.path(position, dst, path);
+    if (!success) return;
+    //if (DEBUG_PATH) Gdx.app.debug(TAG, "path=" + path);
+    targets = path.iterator();
+    targets.next(); // consume src position
+    if (targets.hasNext()) {
+      Point2 firstDst = targets.next();
+      firstDst.copyTo(target);
+    } else {
+      target.set(position);
+    }
+
+    //if (DEBUG_TARGET) Gdx.app.debug(TAG, "target=" + target);
+  }
+
+  public void update(float delta) {
+    /*
+    if (target.equals(Vector3.Zero)) return;
+    if (position.epsilonEquals(target, 0.1f)) {
+      System.out.println("at target");
+      if (targets.hasNext()) {
+        Point2 dst = targets.next();
+        dst.copyTo(target);
+        System.out.println("update new target");
+      } else {
+        target.set(position);
+        System.out.println("update no change");
+        return;
+      }
+    }
+
+    position.lerp(target, delta);
+
+    System.out.println("position=" + position + "; target=" + target);
+    */
+
+    if (target.equals(Vector3.Zero)) return;
+    //float targetLen = target.len();
+    float speed     = 9f;
+    float distance  = speed * delta;
+    float traveled  = 0;
+    System.out.println("move " + distance);
+    while (traveled < distance) {
+      float targetLen = position.dst(target);
+      float part = Math.min(distance - traveled, targetLen);
+      if (part == 0) break;
+      position.lerp(target, part / targetLen);
+      System.out.println(position + "; " + targetLen + "; " + (traveled + part) + "; " + part + "; " + distance);
+      traveled += part;
+      if (part == targetLen) {
+        if (targets.hasNext()) {
+          targets.next().copyTo(target);
+          System.out.println("next target");
+        } else {
+          break;
+        }
+      }
+    }
+
+    /*
+    if (targets.hasNext()) {
+      traveled += distance;
+      movement.add(target.cpy().nor().scl(distance));
+    }
+    */
+
+    //position.add(movement);
+    //if (!targets.hasNext()) {
+    //  traveled = 0;
+    //}
   }
 
   public float getAngle() {

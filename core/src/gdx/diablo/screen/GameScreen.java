@@ -25,7 +25,6 @@ import com.badlogic.gdx.scenes.scene2d.utils.UIUtils;
 import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.IntMap;
-import com.badlogic.gdx.utils.Timer;
 
 import org.apache.commons.io.IOUtils;
 
@@ -96,7 +95,7 @@ public class GameScreen extends ScreenAdapter implements LoadingScreen.Loadable 
   //Char character;
   public Player player;
   IntMap<Player> entities = new IntMap<>();
-  Timer.Task updateTask;
+  //Timer.Task updateTask;
 
   Socket socket;
   PrintWriter out;
@@ -389,7 +388,7 @@ public class GameScreen extends ScreenAdapter implements LoadingScreen.Loadable 
       //if (hit != null) {
         Vector3 coords = mapRenderer.getCursor();
         //player.target().set(coords);
-        //player.updatePath(map, coords);
+        player.setPath(map, coords);
         //if (player.path().getCount() > 0) {
         //  player.setMode("RN");
         //}
@@ -397,6 +396,11 @@ public class GameScreen extends ScreenAdapter implements LoadingScreen.Loadable 
       //  System.out.println(hit);
       //}
     }
+
+    player.update(delta);
+    GridPoint2 position = new GridPoint2();
+    position.set((int) player.position().x, (int) player.position().y);
+    mapRenderer.setPosition(position);
 
     b.setProjectionMatrix(camera.combined);
     b.begin();
@@ -491,6 +495,7 @@ public class GameScreen extends ScreenAdapter implements LoadingScreen.Loadable 
       }
     }
 
+    /*
     updateTask = Timer.schedule(new Timer.Task() {
       GridPoint2 position = new GridPoint2();
 
@@ -505,6 +510,7 @@ public class GameScreen extends ScreenAdapter implements LoadingScreen.Loadable 
         out.println(moveTo);
       }
     }, 0, 1 / 25f);
+    */
   }
 
   @Override
@@ -523,7 +529,7 @@ public class GameScreen extends ScreenAdapter implements LoadingScreen.Loadable 
     Diablo.input.removeProcessor(stage);
     Diablo.input.removeProcessor(inputProcessorTest);
 
-    updateTask.cancel();
+    //updateTask.cancel();
   }
 
   @Override

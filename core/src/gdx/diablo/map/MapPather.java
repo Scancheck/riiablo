@@ -1,11 +1,16 @@
 package gdx.diablo.map;
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.ObjectFloatMap;
 import com.badlogic.gdx.utils.ObjectMap;
 
 public class MapPather {
+  private static final String TAG = "MapPather";
+  private static final boolean DEBUG         = true;
+  private static final boolean DEBUG_SRC_DST = DEBUG && !true;
+
   Map map;
   Heuristic heuristic = new DiagonalHeuristic();
 
@@ -14,7 +19,8 @@ public class MapPather {
   }
 
   public boolean path(Vector3 src, Vector3 dst, Path path) {
-    if (src.dst(dst) > 25f) return false;
+    //if (src.dst(dst) > 25f) return false;
+    if (DEBUG_SRC_DST) Gdx.app.debug(TAG, "src=" + src + "; dst=" + dst);
     return path(new Point2(src), new Point2(dst), path);
   }
 
@@ -70,11 +76,13 @@ public class MapPather {
   }
 
   private void buildPath(Point2 src, ObjectMap<Point2, Point2> cameFrom, Path path) {
-    //path.append(src);
+    path.append(src);
     while (cameFrom.containsKey(src)) {
       src = cameFrom.get(src);
       path.append(src);
     }
+
+    path.reverse();
   }
 
   private void getNeighbors(Point2 src, Array<Point2> dst) {
