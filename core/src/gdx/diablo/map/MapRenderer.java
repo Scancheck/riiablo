@@ -264,6 +264,63 @@ public class MapRenderer {
     }
   }
 
+  public void setPosition(Vector3 pos, boolean force) {
+    //if (this.x != x || this.y != y || force) {
+      this.x = (int) pos.x;
+      this.y = (int) pos.y;
+      spx =  (x * Tile.SUBTILE_WIDTH50)  - (y * Tile.SUBTILE_WIDTH50);
+      spy = -(x * Tile.SUBTILE_HEIGHT50) - (y * Tile.SUBTILE_HEIGHT50);
+      float spxf =  (pos.x * Tile.SUBTILE_WIDTH50)  - (pos.y * Tile.SUBTILE_WIDTH50);
+      float spyf = -(pos.x * Tile.SUBTILE_HEIGHT50) - (pos.y * Tile.SUBTILE_HEIGHT50);
+      camera.position.set(spxf, spyf, 0);
+      camera.update();
+      // subtile index in tile-space
+      stx = x < 0
+          ? (x + 1) % Tile.SUBTILE_SIZE + (Tile.SUBTILE_SIZE - 1)
+          : x % Tile.SUBTILE_SIZE;
+      sty = y < 0
+          ? (y + 1) % Tile.SUBTILE_SIZE + (Tile.SUBTILE_SIZE - 1)
+          : y % Tile.SUBTILE_SIZE;
+      t   = Tile.SUBTILE_INDEX[stx][sty];
+
+      // pixel offset of subtile in world-space
+      spx = -Tile.SUBTILE_WIDTH50  + (x * Tile.SUBTILE_WIDTH50)  - (y * Tile.SUBTILE_WIDTH50);
+      spy = -Tile.SUBTILE_HEIGHT50 - (x * Tile.SUBTILE_HEIGHT50) - (y * Tile.SUBTILE_HEIGHT50);
+
+      // tile index in world-space
+      tx = x < 0
+          ? ((x + 1) / Tile.SUBTILE_SIZE) - 1
+          : (x / Tile.SUBTILE_SIZE);
+      ty = y < 0
+          ? ((y + 1) / Tile.SUBTILE_SIZE) - 1
+          : (y / Tile.SUBTILE_SIZE);
+
+      tpx = spx - Tile.SUBTILE_OFFSET[t][0];
+      tpy = spy - Tile.SUBTILE_OFFSET[t][1];
+
+      updateBounds();
+
+      final int offX = tilesX >>> 1;
+      final int offY = tilesY >>> 1;
+      startX = tx + offX - offY;
+      startY = ty - offX - offY;
+      startPx = tpx + renderWidth  / 2 - Tile.WIDTH50;
+      startPy = tpy + renderHeight / 2 - Tile.HEIGHT50;
+
+      if (DEBUG_MATH) {
+        Gdx.app.debug(TAG,
+            String.format("(%2d,%2d){%d,%d}[%2d,%2d](%dx%d)[%dx%d] %d,%d",
+                x, y, stx, sty, tx, ty, width, height, tilesX, tilesY, spx, spy));
+      }
+
+      map.updatePopPads(popped, x, y, tx, ty, stx, sty);
+      if (DEBUG_POPPADS) {
+        String popPads = getPopPads();
+        if (!popPads.isEmpty()) Gdx.app.debug(TAG, "PopPad IDs: " + popPads);
+      }
+    //}
+  }
+
   private String getPopPads() {
     StringBuilder builder = new StringBuilder();
     for (int i = popped.nextSetBit(0); i >= 0; i = popped.nextSetBit(i + 1)) {

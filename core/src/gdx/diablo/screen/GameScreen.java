@@ -398,9 +398,9 @@ public class GameScreen extends ScreenAdapter implements LoadingScreen.Loadable 
     }
 
     player.update(delta);
-    GridPoint2 position = new GridPoint2();
-    position.set((int) player.position().x, (int) player.position().y);
-    mapRenderer.setPosition(position);
+    //GridPoint2 position = new GridPoint2();
+    //position.set((int) player.position().x, (int) player.position().y);
+    mapRenderer.setPosition(player.position(), true);
 
     b.setProjectionMatrix(camera.combined);
     b.begin();
