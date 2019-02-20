@@ -556,7 +556,7 @@ public class Map implements Disposable {
   }
 
   private MapGraph mapGraph = new MapGraph(this);
-  private IndexedAStarPathFinder<MapGraph.Point2> pathFinder = new IndexedAStarPathFinder<>(mapGraph);
+  private IndexedAStarPathFinder<MapGraph.Point2> pathFinder = new IndexedAStarPathFinder<>(mapGraph, true);
 
   public boolean findPath(Vector3 src, Vector3 dst, GraphPath<MapGraph.Point2> path) {
     return mapGraph.searchNodePath(pathFinder, src, dst, path);

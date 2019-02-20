@@ -1,5 +1,6 @@
 package gdx.diablo.map;
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.ai.pfa.Connection;
 import com.badlogic.gdx.ai.pfa.DefaultConnection;
 import com.badlogic.gdx.ai.pfa.GraphPath;
@@ -7,11 +8,16 @@ import com.badlogic.gdx.ai.pfa.Heuristic;
 import com.badlogic.gdx.ai.pfa.PathFinder;
 import com.badlogic.gdx.ai.pfa.indexed.IndexedAStarPathFinder;
 import com.badlogic.gdx.ai.pfa.indexed.IndexedGraph;
+import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.IntMap;
 
 public class MapGraph implements IndexedGraph<MapGraph.Point2> {
+  private static final String TAG = "MapGraph";
+  private static final boolean DEBUG         = true;
+  private static final boolean DEBUG_METRICS = DEBUG && !true;
+
   Heuristic<Point2> heuristic = new ManhattanDistanceHeuristic();
 
   Map map;
@@ -71,7 +77,14 @@ public class MapGraph implements IndexedGraph<MapGraph.Point2> {
   }
 
   public boolean searchNodePath(PathFinder<Point2> pathFinder, Point2 src, Point2 dst, GraphPath<Point2> path) {
-    return pathFinder.searchNodePath(src, dst, heuristic, path);
+    boolean success = pathFinder.searchNodePath(src, dst, heuristic, path);
+    if (DEBUG_METRICS && pathFinder instanceof IndexedAStarPathFinder) {
+      IndexedAStarPathFinder.Metrics metrics = ((IndexedAStarPathFinder) pathFinder).metrics;
+      Gdx.app.debug(TAG, String.format("visitedNodes=%d, openListAdditions=%d, openListPeak=%d",
+          metrics.visitedNodes, metrics.openListAdditions, metrics.openListPeak));
+    }
+
+    return success;
   }
 
   @Override
@@ -169,6 +182,13 @@ public class MapGraph implements IndexedGraph<MapGraph.Point2> {
     @Override
     public float estimate(Point2 src, Point2 dst) {
       return Math.abs(dst.x - src.x) + Math.abs(dst.y - src.y);
+    }
+  }
+
+  static class EuclideanDistanceHeuristic implements Heuristic<Point2> {
+    @Override
+    public float estimate(Point2 src, Point2 dst) {
+      return Vector2.dst(src.x, src.y, dst.x, dst.y);
     }
   }
 }
