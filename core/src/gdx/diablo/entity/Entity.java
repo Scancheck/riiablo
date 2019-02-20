@@ -3,6 +3,8 @@ package gdx.diablo.entity;
 import android.support.annotation.CallSuper;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.ai.pfa.DefaultGraphPath;
+import com.badlogic.gdx.ai.pfa.GraphPath;
 import com.badlogic.gdx.assets.AssetDescriptor;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.Batch;
@@ -10,6 +12,7 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Align;
+import com.badlogic.gdx.utils.Array;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -29,8 +32,7 @@ import gdx.diablo.graphics.PaletteIndexedColorDrawable;
 import gdx.diablo.map.DS1;
 import gdx.diablo.map.DT1.Tile;
 import gdx.diablo.map.Map;
-import gdx.diablo.map.Path;
-import gdx.diablo.map.Point2;
+import gdx.diablo.map.MapGraph;
 import gdx.diablo.widget.Label;
 
 public class Entity {
@@ -133,8 +135,13 @@ public class Entity {
   Label label;
   String name;
   Vector3 target = new Vector3();
-  Path path = new Path();
-  Iterator<Point2> targets = Collections.emptyIterator();
+  DefaultGraphPath<MapGraph.Point2> path = new DefaultGraphPath<MapGraph.Point2>() {
+    @Override
+    public String toString() {
+      return nodes.toString();
+    }
+  };
+  Iterator<MapGraph.Point2> targets = Collections.emptyIterator();
   float traveled;
 
   public static Entity create(DS1 ds1, DS1.Object obj) {
@@ -229,11 +236,12 @@ public class Entity {
     return target;
   }
 
-  public Path path() {
+  public GraphPath<MapGraph.Point2> path() {
     return path;
   }
 
   public void setPath(Map map, Vector3 dst) {
+    /*
     boolean success = map.path(position, dst, path);
     if (!success) return;
     //if (DEBUG_PATH) Gdx.app.debug(TAG, "path=" + path);
@@ -242,6 +250,20 @@ public class Entity {
     if (targets.hasNext()) {
       Point2 firstDst = targets.next();
       firstDst.copyTo(target);
+    } else {
+      target.set(position);
+    }
+
+    //if (DEBUG_TARGET) Gdx.app.debug(TAG, "target=" + target);
+    */
+    boolean success = map.findPath(position, dst, path);
+    if (!success) return;
+    //if (DEBUG_PATH) Gdx.app.debug(TAG, "path=" + path);
+    targets = new Array.ArrayIterator<>(path.nodes);
+    targets.next(); // consume src position
+    if (targets.hasNext()) {
+      MapGraph.Point2 firstDst = targets.next();
+      target.set(firstDst.x, firstDst.y, 0);
     } else {
       target.set(position);
     }
@@ -285,7 +307,8 @@ public class Entity {
       traveled += part;
       if (part == targetLen) {
         if (targets.hasNext()) {
-          targets.next().copyTo(target);
+          MapGraph.Point2 next = targets.next();
+          target.set(next.x, next.y, 0);
           System.out.println("next target");
         } else {
           break;

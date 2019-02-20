@@ -1,6 +1,7 @@
 package gdx.diablo.map;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.ai.pfa.GraphPath;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
@@ -898,6 +899,19 @@ public class MapRenderer2 {
     shapes.setColor(Color.TAN);
     shapes.set(ShapeRenderer.ShapeType.Filled);
     for (Point2 dst : path) {
+      float px = +(dst.x * Tile.SUBTILE_WIDTH50)  - (dst.y * Tile.SUBTILE_WIDTH50)  - Tile.SUBTILE_WIDTH50;
+      float py = -(dst.x * Tile.SUBTILE_HEIGHT50) - (dst.y * Tile.SUBTILE_HEIGHT50) - Tile.SUBTILE_HEIGHT50;
+      drawDiamondSolid(shapes, px, py, Tile.SUBTILE_WIDTH, Tile.SUBTILE_HEIGHT);
+    }
+
+    shapes.set(ShapeRenderer.ShapeType.Line);
+  }
+
+  public void drawDebugPath(ShapeRenderer shapes, GraphPath<MapGraph.Point2> path) {
+    if (path == null) return;
+    shapes.setColor(Color.TAN);
+    shapes.set(ShapeRenderer.ShapeType.Filled);
+    for (MapGraph.Point2 dst : path) {
       float px = +(dst.x * Tile.SUBTILE_WIDTH50)  - (dst.y * Tile.SUBTILE_WIDTH50)  - Tile.SUBTILE_WIDTH50;
       float py = -(dst.x * Tile.SUBTILE_HEIGHT50) - (dst.y * Tile.SUBTILE_HEIGHT50) - Tile.SUBTILE_HEIGHT50;
       drawDiamondSolid(shapes, px, py, Tile.SUBTILE_WIDTH, Tile.SUBTILE_HEIGHT);

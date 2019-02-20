@@ -3,6 +3,8 @@ package gdx.diablo.map;
 import com.google.common.base.Preconditions;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.ai.pfa.GraphPath;
+import com.badlogic.gdx.ai.pfa.indexed.IndexedAStarPathFinder;
 import com.badlogic.gdx.assets.AssetDescriptor;
 import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.graphics.Color;
@@ -551,6 +553,13 @@ public class Map implements Disposable {
     //...
     //System.out.println("time = " + (System.currentTimeMillis() - start) + "ms");
     return new MapPather(this).path(src, dst, path);
+  }
+
+  private MapGraph mapGraph = new MapGraph(this);
+  private IndexedAStarPathFinder<MapGraph.Point2> pathFinder = new IndexedAStarPathFinder<>(mapGraph);
+
+  public boolean findPath(Vector3 src, Vector3 dst, GraphPath<MapGraph.Point2> path) {
+    return mapGraph.searchNodePath(pathFinder, src, dst, path);
   }
 
   static class Zone {

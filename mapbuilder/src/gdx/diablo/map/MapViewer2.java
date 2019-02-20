@@ -6,6 +6,8 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputAdapter;
 import com.badlogic.gdx.InputMultiplexer;
+import com.badlogic.gdx.ai.pfa.DefaultGraphPath;
+import com.badlogic.gdx.ai.pfa.GraphPath;
 import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.backends.lwjgl.LwjglApplication;
 import com.badlogic.gdx.backends.lwjgl.LwjglApplicationConfiguration;
@@ -76,9 +78,17 @@ public class MapViewer2 extends ApplicationAdapter {
 
   int x, y;
 
+  //Point2 src;
+  //Point2 dst;
+  //Path    path = new Path();
   Vector3 src;
   Vector3 dst;
-  Path    path = new Path();
+  GraphPath<MapGraph.Point2> path = new DefaultGraphPath<MapGraph.Point2>() {
+    @Override
+    public String toString() {
+      return nodes.toString();
+    }
+  };
 
   boolean drawCrosshair;
   boolean drawGrid;
@@ -136,6 +146,44 @@ public class MapViewer2 extends ApplicationAdapter {
     mapRenderer.resize();
 
     InputMultiplexer multiplexer = new InputMultiplexer();
+    multiplexer.addProcessor(new InputAdapter() {
+      @Override
+      public boolean touchDown(int screenX, int screenY, int pointer, int button) {
+        switch (button) {
+          case Input.Buttons.LEFT:
+            GridPoint2 srcCoords = mapRenderer.coords();
+            src = new Vector3(srcCoords.x, srcCoords.y, 0);
+            dst = null;
+            break;
+          case Input.Buttons.RIGHT:
+            src = dst = null;
+            break;
+        }
+        return true;
+      }
+
+      @Override
+      public boolean touchDragged(int screenX, int screenY, int button) {
+        if (src != null) {
+          GridPoint2 dstCoords = mapRenderer.coords();
+          dst = new Vector3(dstCoords.x, dstCoords.y, 0);
+        }
+        return true;
+      }
+
+      @Override
+      public boolean touchUp(int screenX, int screenY, int pointer, int button) {
+        switch (button) {
+          case Input.Buttons.LEFT:
+            GridPoint2 dstCoords = mapRenderer.coords();
+            dst = new Vector3(dstCoords.x, dstCoords.y, 0);
+            map.findPath(src, dst, path);
+            System.out.println(path);
+            break;
+        }
+        return true;
+      }
+    });
     multiplexer.addProcessor(new InputAdapter() {
       private final float ZOOM_AMOUNT = 0.1f;
 
@@ -338,6 +386,18 @@ public class MapViewer2 extends ApplicationAdapter {
     shapes.setAutoShapeType(true);
     shapes.begin(ShapeRenderer.ShapeType.Line);
     mapRenderer.drawDebug(shapes);
+    if (src != null && dst != null) {
+      mapRenderer.drawDebugPath(shapes, path);
+      float srcX = +(src.x * Tile.SUBTILE_WIDTH50)  - (src.y * Tile.SUBTILE_WIDTH50);
+      float srcY = -(src.x * Tile.SUBTILE_HEIGHT50) - (src.y * Tile.SUBTILE_HEIGHT50);
+      float dstX = +(dst.x * Tile.SUBTILE_WIDTH50)  - (dst.y * Tile.SUBTILE_WIDTH50);
+      float dstY = -(dst.x * Tile.SUBTILE_HEIGHT50) - (dst.y * Tile.SUBTILE_HEIGHT50);
+      shapes.setColor(Color.WHITE);
+      shapes.circle(srcX, srcY, 32);
+      shapes.set(ShapeRenderer.ShapeType.Filled);
+      shapes.setColor(Color.ORANGE);
+      shapes.rectLine(srcX, srcY, dstX, dstY, 1);
+    }
     shapes.end();
 
     final int width  = Gdx.graphics.getWidth();
