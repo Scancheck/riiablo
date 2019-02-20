@@ -43,6 +43,7 @@ import gdx.diablo.key.MappedKeyStateAdapter;
 import gdx.diablo.map.Map;
 import gdx.diablo.map.MapLoader;
 import gdx.diablo.map.MapRenderer;
+import gdx.diablo.map.MapRenderer2;
 import gdx.diablo.panel.CharacterPanel;
 import gdx.diablo.panel.ControlPanel;
 import gdx.diablo.panel.EscapePanel;
@@ -85,7 +86,7 @@ public class GameScreen extends ScreenAdapter implements LoadingScreen.Loadable 
 
   final AssetDescriptor<Map> mapDescriptor = new AssetDescriptor<>("Act 1", Map.class, MapLoader.MapParameters.of(0, 0, 0));
   Map map;
-  MapRenderer mapRenderer;
+  MapRenderer2 mapRenderer2;
   OrthographicCamera camera;
   InputProcessor inputProcessorTest;
 
@@ -317,10 +318,16 @@ public class GameScreen extends ScreenAdapter implements LoadingScreen.Loadable 
           case Input.Keys.TAB:
             if (UIUtils.shift()) {
               MapRenderer.RENDER_DEBUG_WALKABLE = MapRenderer.RENDER_DEBUG_WALKABLE == 0 ? 1 : 0;
+              MapRenderer2.RENDER_DEBUG_WALKABLE = MapRenderer2.RENDER_DEBUG_WALKABLE == 0 ? 1 : 0;
             } else {
               MapRenderer.RENDER_DEBUG_GRID++;
               if (MapRenderer.RENDER_DEBUG_GRID > MapRenderer.DEBUG_GRID_MODES) {
                 MapRenderer.RENDER_DEBUG_GRID = 0;
+              }
+
+              MapRenderer2.RENDER_DEBUG_GRID++;
+              if (MapRenderer2.RENDER_DEBUG_GRID > MapRenderer2.DEBUG_GRID_MODES) {
+                MapRenderer2.RENDER_DEBUG_GRID = 0;
               }
             }
             return true;
@@ -381,31 +388,22 @@ public class GameScreen extends ScreenAdapter implements LoadingScreen.Loadable 
     PaletteIndexedBatch b = Diablo.batch;
     b.setPalette(Diablo.palettes.act1);
 
-    mapRenderer.hit();
+    //mapRenderer.hit();
     if (Gdx.input.isButtonPressed(Input.Buttons.LEFT)) {
-      // FIXME: should block click events on UI panels, bugged right now
-      //Actor hit = stage.hit(Gdx.input.getX(), Gdx.input.getY(), true);
-      //if (hit != null) {
-        Vector3 coords = mapRenderer.getCursor();
-        //player.target().set(coords);
-        player.setPath(map, coords);
-        //if (player.path().getCount() > 0) {
-        //  player.setMode("RN");
-        //}
-      //} else {
-      //  System.out.println(hit);
-      //}
+      GridPoint2 coords = mapRenderer2.coords();
+      player.setPath(map, new Vector3(coords.x, coords.y, 0));
     }
 
     player.update(delta);
     //GridPoint2 position = new GridPoint2();
     //position.set((int) player.position().x, (int) player.position().y);
-    mapRenderer.setPosition(player.position(), true);
+
+    mapRenderer2.update();
 
     b.setProjectionMatrix(camera.combined);
     b.begin();
     //map.draw(b, 0, 0, 30, 13, Diablo.VIRTUAL_WIDTH, Diablo.VIRTUAL_HEIGHT, 1.5f);
-    mapRenderer.render();
+    mapRenderer2.draw(delta);
     b.end();
 
     // pixel offset of subtile in world-space
@@ -420,9 +418,8 @@ public class GameScreen extends ScreenAdapter implements LoadingScreen.Loadable 
     Diablo.shapes.setAutoShapeType(true);
     Diablo.shapes.setProjectionMatrix(camera.combined);
     Diablo.shapes.begin(ShapeRenderer.ShapeType.Line);
-    mapRenderer.renderDebug(Diablo.shapes);
-    //player.drawDebug(Diablo.shapes, spx, spy);
-    mapRenderer.renderDebugPath2(Diablo.shapes, player.path());
+    mapRenderer2.drawDebug(Diablo.shapes);
+    mapRenderer2.drawDebugPath(Diablo.shapes, player.path());
     player.drawDebug(Diablo.shapes);
     Diablo.shapes.end();
 
@@ -457,16 +454,18 @@ public class GameScreen extends ScreenAdapter implements LoadingScreen.Loadable 
     // FIXME: Below causes bug with debug text in MapRenderer, setting camera to screen dims fixes, but renders far too much on mobile
     camera = new OrthographicCamera(Diablo.VIRTUAL_WIDTH, Diablo.VIRTUAL_HEIGHT);
     //camera = new OrthographicCamera(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
-    mapRenderer = new MapRenderer(Diablo.batch, camera);
-    mapRenderer.setMap(map);
-    mapRenderer.setEntities(entities);
-    mapRenderer.resize();
+
+    mapRenderer2 = new MapRenderer2(Diablo.batch);
+    mapRenderer2.setMap(map);
+    mapRenderer2.setSrc(player);
+    mapRenderer2.setEntities(entities);
+    mapRenderer2.resize();
 
     GridPoint2 origin = map.find(Map.ID.TOWN_ENTRY_1);
-    mapRenderer.setPosition(origin);
     if (Gdx.app.getType() == Application.ApplicationType.Android) {
       camera.zoom = 0.80f;
       camera.update();
+      mapRenderer2.zoom(camera.zoom);
     }
 
     //character.x = origin.x;
