@@ -3,8 +3,6 @@ package gdx.diablo.entity;
 import android.support.annotation.CallSuper;
 
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.ai.pfa.DefaultGraphPath;
-import com.badlogic.gdx.ai.pfa.GraphPath;
 import com.badlogic.gdx.assets.AssetDescriptor;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.Batch;
@@ -43,7 +41,7 @@ public class Entity {
   private static final boolean DEBUG_DIRTY      = DEBUG && true;
   private static final boolean DEBUG_ASSETS     = DEBUG && true;
   private static final boolean DEBUG_STATE      = DEBUG && true;
-  private static final boolean DEBUG_PATH       = DEBUG && true;
+  private static final boolean DEBUG_PATH       = DEBUG && !true;
   private static final boolean DEBUG_TARGET     = DEBUG && true;
 
   protected enum EntType {
@@ -135,14 +133,8 @@ public class Entity {
   Label label;
   String name;
   Vector3 target = new Vector3();
-  DefaultGraphPath<MapGraph.Point2> path = new DefaultGraphPath<MapGraph.Point2>() {
-    @Override
-    public String toString() {
-      return nodes.toString();
-    }
-  };
+  MapGraph.MapGraphPath path = new MapGraph.MapGraphPath();
   Iterator<MapGraph.Point2> targets = Collections.emptyIterator();
-  float traveled;
 
   public static Entity create(DS1 ds1, DS1.Object obj) {
     final int type = obj.type;
@@ -236,29 +228,15 @@ public class Entity {
     return target;
   }
 
-  public GraphPath<MapGraph.Point2> path() {
+  public MapGraph.MapGraphPath path() {
     return path;
   }
 
   public void setPath(Map map, Vector3 dst) {
-    /*
-    boolean success = map.path(position, dst, path);
-    if (!success) return;
-    //if (DEBUG_PATH) Gdx.app.debug(TAG, "path=" + path);
-    targets = path.iterator();
-    targets.next(); // consume src position
-    if (targets.hasNext()) {
-      Point2 firstDst = targets.next();
-      firstDst.copyTo(target);
-    } else {
-      target.set(position);
-    }
-
-    //if (DEBUG_TARGET) Gdx.app.debug(TAG, "target=" + target);
-    */
     boolean success = map.findPath(position, dst, path);
     if (!success) return;
-    //if (DEBUG_PATH) Gdx.app.debug(TAG, "path=" + path);
+    if (DEBUG_PATH) Gdx.app.debug(TAG, "path=" + path);
+    map.smoothPath(path);
     targets = new Array.ArrayIterator<>(path.nodes);
     targets.next(); // consume src position
     if (targets.hasNext()) {
@@ -272,27 +250,13 @@ public class Entity {
   }
 
   public void update(float delta) {
-    /*
     if (target.equals(Vector3.Zero)) return;
-    if (position.epsilonEquals(target, 0.1f)) {
-      System.out.println("at target");
-      if (targets.hasNext()) {
-        Point2 dst = targets.next();
-        dst.copyTo(target);
-        System.out.println("update new target");
-      } else {
-        target.set(position);
-        System.out.println("update no change");
-        return;
+    if (position.epsilonEquals(target)) {
+      if (!targets.hasNext()) {
+        path.clear();
       }
     }
 
-    position.lerp(target, delta);
-
-    System.out.println("position=" + position + "; target=" + target);
-    */
-
-    if (target.equals(Vector3.Zero)) return;
     //float targetLen = target.len();
     float speed     = 9f;
     float distance  = speed * delta;
@@ -315,18 +279,6 @@ public class Entity {
         }
       }
     }
-
-    /*
-    if (targets.hasNext()) {
-      traveled += distance;
-      movement.add(target.cpy().nor().scl(distance));
-    }
-    */
-
-    //position.add(movement);
-    //if (!targets.hasNext()) {
-    //  traveled = 0;
-    //}
   }
 
   public float getAngle() {

@@ -4,12 +4,14 @@ import com.google.common.base.Preconditions;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.ai.pfa.GraphPath;
+import com.badlogic.gdx.ai.pfa.SmoothableGraphPath;
 import com.badlogic.gdx.ai.pfa.indexed.IndexedAStarPathFinder;
 import com.badlogic.gdx.assets.AssetDescriptor;
 import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.math.GridPoint2;
 import com.badlogic.gdx.math.MathUtils;
+import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Bits;
@@ -560,6 +562,10 @@ public class Map implements Disposable {
 
   public boolean findPath(Vector3 src, Vector3 dst, GraphPath<MapGraph.Point2> path) {
     return mapGraph.searchNodePath(pathFinder, src, dst, path);
+  }
+
+  public void smoothPath(SmoothableGraphPath<MapGraph.Point2, Vector2> path) {
+    mapGraph.smoothPath(path);
   }
 
   static class Zone {

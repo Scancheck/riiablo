@@ -1,7 +1,6 @@
 package gdx.diablo.map;
 
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.ai.pfa.GraphPath;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
@@ -13,10 +12,12 @@ import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Align;
+import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Bits;
 import com.badlogic.gdx.utils.IntMap;
 
 import java.util.Arrays;
+import java.util.Iterator;
 
 import gdx.diablo.Diablo;
 import gdx.diablo.entity.Entity;
@@ -907,17 +908,20 @@ public class MapRenderer2 {
     shapes.set(ShapeRenderer.ShapeType.Line);
   }
 
-  public void drawDebugPath(ShapeRenderer shapes, GraphPath<MapGraph.Point2> path) {
-    if (path == null) return;
-    shapes.setColor(Color.TAN);
-    shapes.set(ShapeRenderer.ShapeType.Filled);
-    for (MapGraph.Point2 dst : path) {
-      float px = +(dst.x * Tile.SUBTILE_WIDTH50)  - (dst.y * Tile.SUBTILE_WIDTH50)  - Tile.SUBTILE_WIDTH50;
-      float py = -(dst.x * Tile.SUBTILE_HEIGHT50) - (dst.y * Tile.SUBTILE_HEIGHT50) - Tile.SUBTILE_HEIGHT50;
-      drawDiamondSolid(shapes, px, py, Tile.SUBTILE_WIDTH, Tile.SUBTILE_HEIGHT);
-    }
-
+  public void drawDebugPath(ShapeRenderer shapes, MapGraph.MapGraphPath path) {
+    if (path == null || path.getCount() < 2) return;
+    shapes.setColor(Color.RED);
     shapes.set(ShapeRenderer.ShapeType.Line);
+    Iterator<MapGraph.Point2> it = new Array.ArrayIterator<>(path.nodes);
+    MapGraph.Point2 src = it.next();
+    for (MapGraph.Point2 dst; it.hasNext(); src = dst) {
+      dst = it.next();
+      float px1 = +(src.x * Tile.SUBTILE_WIDTH50)  - (src.y * Tile.SUBTILE_WIDTH50);
+      float py1 = -(src.x * Tile.SUBTILE_HEIGHT50) - (src.y * Tile.SUBTILE_HEIGHT50);
+      float px2 = +(dst.x * Tile.SUBTILE_WIDTH50)  - (dst.y * Tile.SUBTILE_WIDTH50);
+      float py2 = -(dst.x * Tile.SUBTILE_HEIGHT50) - (dst.y * Tile.SUBTILE_HEIGHT50);
+      shapes.line(px1, py1, px2, py2);
+    }
   }
 
   private static void drawDiamondSolid(ShapeRenderer shapes, float x, float y, int width, int height) {
