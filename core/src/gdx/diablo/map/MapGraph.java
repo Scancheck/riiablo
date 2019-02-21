@@ -64,6 +64,7 @@ public class MapGraph implements IndexedGraph<MapGraph.Point2> {
 
   public boolean searchNodePath(PathFinder<Point2> pathFinder, Vector3 src, Vector3 dst, GraphPath<Point2> path) {
     path.clear();
+    if (dst == null) return false;
     Map.Zone zone = map.getZone((int) dst.x, (int) dst.y);
     if (zone != null && zone.flags((int) dst.x, (int) dst.y) != 0) {
       return false;

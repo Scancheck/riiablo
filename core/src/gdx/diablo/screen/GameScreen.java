@@ -35,6 +35,7 @@ import java.io.PrintWriter;
 
 import gdx.diablo.Diablo;
 import gdx.diablo.Keys;
+import gdx.diablo.entity.Direction;
 import gdx.diablo.entity.Player;
 import gdx.diablo.graphics.PaletteIndexedBatch;
 import gdx.diablo.graphics.PaletteIndexedColorDrawable;
@@ -62,7 +63,7 @@ import gdx.diablo.widget.TextArea;
 
 public class GameScreen extends ScreenAdapter implements LoadingScreen.Loadable {
   private static final String TAG = "GameScreen";
-  private static final boolean DEBUG_TOUCHPAD = true;
+  private static final boolean DEBUG_TOUCHPAD = !true;
   private static final boolean DEBUG_MOBILE   = true;
 
   final AssetDescriptor<Sound> windowopenDescriptor = new AssetDescriptor<>("data\\global\\sfx\\cursor\\windowopen.wav", Sound.class);
@@ -219,8 +220,19 @@ public class GameScreen extends ScreenAdapter implements LoadingScreen.Loadable 
       touchpad.addListener(new ChangeListener() {
         @Override
         public void changed(ChangeEvent event, Actor actor) {
-          float x = touchpad.getKnobPercentX();
-          float y = touchpad.getKnobPercentY();
+          //float x = touchpad.getKnobPercentX();
+          //float y = touchpad.getKnobPercentY();
+          //if (x == 0 && y == 0) {
+          //  player.setPath(map, null);
+          //} else {
+          //  float rad = MathUtils.atan2(y, x);
+          //  x = Direction.getOffX(rad);
+          //  y = Direction.getOffY(rad);
+          //  player.setPath(map, new Vector3(x, y, 0).add(player.position()));
+          //}
+          //System.out.println(x + "," + y + "; " + touchpad.getKnobX() + "," + touchpad.getKnobY());
+
+          /*
           if (x == 0 && y == 0) {
             player.setMode("TN");
             return;
@@ -233,6 +245,7 @@ public class GameScreen extends ScreenAdapter implements LoadingScreen.Loadable 
 
           float rad = MathUtils.atan2(y, x);
           player.setAngle(rad);
+          */
         }
       });
       stage.addActor(touchpad);
@@ -389,9 +402,22 @@ public class GameScreen extends ScreenAdapter implements LoadingScreen.Loadable 
     b.setPalette(Diablo.palettes.act1);
 
     //mapRenderer.hit();
-    if (Gdx.input.isButtonPressed(Input.Buttons.LEFT)) {
-      GridPoint2 coords = mapRenderer2.coords();
-      player.setPath(map, new Vector3(coords.x, coords.y, 0));
+    if (DEBUG_TOUCHPAD || Gdx.app.getType() == Application.ApplicationType.Android) {
+      float x = touchpad.getKnobPercentX();
+      float y = touchpad.getKnobPercentY();
+      if (x == 0 && y == 0) {
+        player.setPath(map, null);
+      } else {
+        float rad = MathUtils.atan2(y, x);
+        x = Direction.getOffX(rad);
+        y = Direction.getOffY(rad);
+        player.setPath(map, new Vector3(x, y, 0).add(player.position()));
+      }
+    } else {
+      if (Gdx.input.isButtonPressed(Input.Buttons.LEFT)) {
+        GridPoint2 coords = mapRenderer2.coords();
+        player.setPath(map, new Vector3(coords.x, coords.y, 0));
+      }
     }
 
     player.update(delta);
