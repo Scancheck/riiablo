@@ -78,6 +78,7 @@ public class MapViewer extends ApplicationAdapter {
   Vector3 src;
   Vector3 dst;
   MapGraph.MapGraphPath path = new MapGraph.MapGraphPath();
+  MapGraph.MapGraphPath smoothedPath = new MapGraph.MapGraphPath();
 
   boolean drawCrosshair;
   boolean drawGrid;
@@ -164,7 +165,10 @@ public class MapViewer extends ApplicationAdapter {
             GridPoint2 dstCoords = mapRenderer.coords();
             dst = new Vector3(dstCoords.x, dstCoords.y, 0);
             map.findPath(src, dst, path);
-            System.out.println(path);
+            smoothedPath.nodes.clear();
+            smoothedPath.nodes.addAll(path.nodes);
+            map.smoothPath(smoothedPath);
+            System.out.println(path + "->" + smoothedPath);
             break;
         }
         return true;
@@ -357,6 +361,7 @@ public class MapViewer extends ApplicationAdapter {
     mapRenderer.drawDebug(shapes);
     if (src != null && dst != null) {
       mapRenderer.drawDebugPath(shapes, path);
+      mapRenderer.drawDebugPath(shapes, smoothedPath, Color.GREEN);
       float srcX = +(src.x * Tile.SUBTILE_WIDTH50)  - (src.y * Tile.SUBTILE_WIDTH50);
       float srcY = -(src.x * Tile.SUBTILE_HEIGHT50) - (src.y * Tile.SUBTILE_HEIGHT50);
       float dstX = +(dst.x * Tile.SUBTILE_WIDTH50)  - (dst.y * Tile.SUBTILE_WIDTH50);

@@ -944,9 +944,13 @@ public class MapRenderer {
   }
 
   public void drawDebugPath(ShapeRenderer shapes, MapGraph.MapGraphPath path) {
+    drawDebugPath(shapes, path, Color.RED);
+  }
+
+  public void drawDebugPath(ShapeRenderer shapes, MapGraph.MapGraphPath path, Color color) {
     if (path == null || path.getCount() < 2) return;
     shapes.setProjectionMatrix(camera.combined);
-    shapes.setColor(Color.RED);
+    shapes.setColor(color);
     shapes.set(ShapeRenderer.ShapeType.Line);
     Iterator<MapGraph.Point2> it = new Array.ArrayIterator<>(path.nodes);
     MapGraph.Point2 src = it.next();
