@@ -23,6 +23,7 @@ import com.badlogic.gdx.scenes.scene2d.utils.UIUtils;
 import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.IntMap;
+import com.badlogic.gdx.utils.Timer;
 
 import org.apache.commons.io.IOUtils;
 
@@ -34,6 +35,7 @@ import java.io.PrintWriter;
 import gdx.diablo.Diablo;
 import gdx.diablo.Keys;
 import gdx.diablo.entity.Direction;
+import gdx.diablo.entity.Entity;
 import gdx.diablo.entity.Player;
 import gdx.diablo.graphics.PaletteIndexedBatch;
 import gdx.diablo.graphics.PaletteIndexedColorDrawable;
@@ -93,7 +95,7 @@ public class GameScreen extends ScreenAdapter implements LoadingScreen.Loadable 
   //Char character;
   public Player player;
   IntMap<Player> entities = new IntMap<>();
-  //Timer.Task updateTask;
+  Timer.Task updateTask;
 
   Socket socket;
   PrintWriter out;
@@ -341,9 +343,10 @@ public class GameScreen extends ScreenAdapter implements LoadingScreen.Loadable 
           case Packets.MOVETO:
             MoveTo moveTo = packet.readValue(MoveTo.class);
             Player p = entities.get(moveTo.id);
+            //if (p == player) break; // Disable forced update positions for now
             if (p != null) {
-              p.position().set(moveTo.x, moveTo.y, 0);
-              p.setAngle(moveTo.angle);
+              p.setPath(map, new Vector3(moveTo.x, moveTo.y, 0));
+              //p.setAngle(moveTo.angle);
             }
             break;
           case Packets.CONNECT_RESPONSE:
@@ -377,10 +380,12 @@ public class GameScreen extends ScreenAdapter implements LoadingScreen.Loadable 
       }
     }
 
-    player.update(delta);
-    if (!player.position().epsilonEquals(player.target())) {
-      float angle = mapRenderer.angle(player.position(), player.target());
-      player.setAngle(angle);
+    for (Entity entity : entities.values()) {
+      entity.update(delta);
+      if (!entity.position().epsilonEquals(entity.target())) {
+        float angle = mapRenderer.angle(entity.position(), entity.target());
+        entity.setAngle(angle);
+      }
     }
 
     mapRenderer.update();
@@ -442,22 +447,17 @@ public class GameScreen extends ScreenAdapter implements LoadingScreen.Loadable 
       }
     }
 
-    /*
     updateTask = Timer.schedule(new Timer.Task() {
       GridPoint2 position = new GridPoint2();
 
       @Override
       public void run() {
-        if (UIUtils.shift()) return;
-        boolean moved = player.move();
-        position.set((int) player.position().x, (int) player.position().y);
-        mapRenderer.setPosition(position);
-        if (!moved) return;
+        Vector3 pos = player.target();
+        position.set((int) pos.x, (int) pos.y);
         String moveTo = Packets.build(new MoveTo(position, player.getAngle()));
         out.println(moveTo);
       }
     }, 0, 1 / 25f);
-    */
   }
 
   @Override
@@ -476,7 +476,7 @@ public class GameScreen extends ScreenAdapter implements LoadingScreen.Loadable 
     Diablo.input.removeProcessor(stage);
     Diablo.input.removeProcessor(inputProcessorTest);
 
-    //updateTask.cancel();
+    updateTask.cancel();
   }
 
   @Override
