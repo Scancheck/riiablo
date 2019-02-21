@@ -18,7 +18,6 @@ import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.Touchable;
 import com.badlogic.gdx.scenes.scene2d.ui.Touchpad;
-import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.scenes.scene2d.utils.UIUtils;
 import com.badlogic.gdx.utils.Align;
@@ -214,37 +213,6 @@ public class GameScreen extends ScreenAdapter implements LoadingScreen.Loadable 
       }});
       touchpad.setSize(164, 164);
       touchpad.setPosition(0, 0);
-      touchpad.addListener(new ChangeListener() {
-        @Override
-        public void changed(ChangeEvent event, Actor actor) {
-          //float x = touchpad.getKnobPercentX();
-          //float y = touchpad.getKnobPercentY();
-          //if (x == 0 && y == 0) {
-          //  player.setPath(map, null);
-          //} else {
-          //  float rad = MathUtils.atan2(y, x);
-          //  x = Direction.getOffX(rad);
-          //  y = Direction.getOffY(rad);
-          //  player.setPath(map, new Vector3(x, y, 0).add(player.position()));
-          //}
-          //System.out.println(x + "," + y + "; " + touchpad.getKnobX() + "," + touchpad.getKnobY());
-
-          /*
-          if (x == 0 && y == 0) {
-            player.setMode("TN");
-            return;
-          //} else if (-0.5f < x && x < 0.5f
-          //        && -0.5f < y && y < 0.5f) {
-          //  character.setMode("tw");
-          } else {
-            player.setMode("RN");
-          }
-
-          float rad = MathUtils.atan2(y, x);
-          player.setAngle(rad);
-          */
-        }
-      });
       stage.addActor(touchpad);
     }
 
@@ -391,7 +359,6 @@ public class GameScreen extends ScreenAdapter implements LoadingScreen.Loadable 
     PaletteIndexedBatch b = Diablo.batch;
     b.setPalette(Diablo.palettes.act1);
 
-    //mapRenderer.hit();
     if (DEBUG_TOUCHPAD || Gdx.app.getType() == Application.ApplicationType.Android) {
       float x = touchpad.getKnobPercentX();
       float y = touchpad.getKnobPercentY();
@@ -415,24 +382,12 @@ public class GameScreen extends ScreenAdapter implements LoadingScreen.Loadable 
       float angle = mapRenderer.angle(player.position(), player.target());
       player.setAngle(angle);
     }
-    //GridPoint2 position = new GridPoint2();
-    //position.set((int) player.position().x, (int) player.position().y);
 
     mapRenderer.update();
 
     b.begin();
-    //map.draw(b, 0, 0, 30, 13, Diablo.VIRTUAL_WIDTH, Diablo.VIRTUAL_HEIGHT, 1.5f);
     mapRenderer.draw(delta);
     b.end();
-
-    // pixel offset of subtile in world-space
-    //int spx = + (character.x * Tile.SUBTILE_WIDTH50)  - (character.y * Tile.SUBTILE_WIDTH50);
-    //int spy = - (character.x * Tile.SUBTILE_HEIGHT50) - (character.y * Tile.SUBTILE_HEIGHT50);
-    //character.draw(b, spx, spy);
-    //int spx = + (player.getOrigin().x * Tile.SUBTILE_WIDTH50)  - (player.getOrigin().y * Tile.SUBTILE_WIDTH50);
-    //int spy = - (player.getOrigin().x * Tile.SUBTILE_HEIGHT50) - (player.getOrigin().y * Tile.SUBTILE_HEIGHT50);
-    //player.draw(b, spx, spy);
-    //player.draw(b);
 
     Diablo.shapes.setAutoShapeType(true);
     Diablo.shapes.begin(ShapeRenderer.ShapeType.Line);
@@ -441,13 +396,6 @@ public class GameScreen extends ScreenAdapter implements LoadingScreen.Loadable 
     player.drawDebug(Diablo.shapes);
     Diablo.shapes.end();
 
-    //b.begin();
-
-    //for (Player p : entities.values()) {
-    //  p.draw(b);
-    //}
-
-    //b.end();
     b.setProjectionMatrix(Diablo.viewport.getCamera().combined);
 
     stage.act();
@@ -469,8 +417,6 @@ public class GameScreen extends ScreenAdapter implements LoadingScreen.Loadable 
     }
     mapRenderer.resize();
 
-    //character.x = origin.x;
-    //character.y = origin.y;
     GridPoint2 origin = map.find(Map.ID.TOWN_ENTRY_1);
     player.position().set(origin.x, origin.y, 0);
 

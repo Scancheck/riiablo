@@ -468,6 +468,7 @@ public class MapRenderer {
   }
 
   public void drawDebug(ShapeRenderer shapes) {
+    batch.setProjectionMatrix(camera.combined);
     shapes.setProjectionMatrix(camera.combined);
     if (RENDER_DEBUG_GRID > 0)
       drawDebugGrid(shapes);
