@@ -254,26 +254,26 @@ public class Entity {
     if (position.epsilonEquals(target)) {
       if (!targets.hasNext()) {
         path.clear();
+        setMode("NU");
+        return;
       }
     }
 
+    setMode("RN");
     //float targetLen = target.len();
-    float speed     = 9f;
+    float speed     = 9f * 2f;
     float distance  = speed * delta;
     float traveled  = 0;
-    //System.out.println("move " + distance);
     while (traveled < distance) {
       float targetLen = position.dst(target);
       float part = Math.min(distance - traveled, targetLen);
       if (part == 0) break;
       position.lerp(target, part / targetLen);
-      //System.out.println(position + "; " + targetLen + "; " + (traveled + part) + "; " + part + "; " + distance);
       traveled += part;
       if (part == targetLen) {
         if (targets.hasNext()) {
           MapGraph.Point2 next = targets.next();
           target.set(next.x, next.y, 0);
-          //System.out.println("next target");
         } else {
           break;
         }

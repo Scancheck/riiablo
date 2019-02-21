@@ -59,7 +59,8 @@ public class MapRenderer2 {
   private static final int TILES_PADDING_Y = 3;
 
   private final Vector3    tmpVec3  = new Vector3();
-  private final Vector2    tmpVec2  = new Vector2();
+  private final Vector2    tmpVec2a = new Vector2();
+  private final Vector2    tmpVec2b = new Vector2();
   private final GridPoint2 tmpVec2i = new GridPoint2();
 
   PaletteIndexedBatch batch;
@@ -158,6 +159,16 @@ public class MapRenderer2 {
     }
   }
 
+  public Vector2 project(Vector2 dst) {
+    return project(dst.x, dst.y, dst);
+  }
+
+  public Vector2 project(float x, float y, Vector2 dst) {
+    dst.x = +(x * Tile.SUBTILE_WIDTH50)  - (y * Tile.SUBTILE_WIDTH50);
+    dst.y = -(x * Tile.SUBTILE_HEIGHT50) - (y * Tile.SUBTILE_HEIGHT50);
+    return dst;
+  }
+
   public Vector2 unproject(Vector2 dst) {
     return unproject(dst.x, dst.y, dst);
   }
@@ -177,9 +188,9 @@ public class MapRenderer2 {
   }
 
   public GridPoint2 coords(GridPoint2 dst) {
-    tmpVec2.set(Gdx.input.getX(), Gdx.input.getY());
-    unproject(tmpVec2);
-    return coords(tmpVec2.x, tmpVec2.y, dst);
+    tmpVec2a.set(Gdx.input.getX(), Gdx.input.getY());
+    unproject(tmpVec2a);
+    return coords(tmpVec2a.x, tmpVec2a.y, dst);
   }
 
   public GridPoint2 coords(float x, float y) {
@@ -194,6 +205,13 @@ public class MapRenderer2 {
     if (selectX < 0) selectX--;
     if (selectY < 0) selectY--;
     return dst.set((int) selectX, (int) selectY);
+  }
+
+  public float angle(Vector3 src, Vector3 dst) {
+    project(tmpVec2a.set(src.x, src.y));
+    project(tmpVec2b.set(dst.x, dst.y));
+    tmpVec2b.sub(tmpVec2a);
+    return MathUtils.atan2(tmpVec2b.y, tmpVec2b.x);
   }
 
   public void resize() {

@@ -395,6 +395,10 @@ public class GameScreen extends ScreenAdapter implements LoadingScreen.Loadable 
     }
 
     player.update(delta);
+    if (!player.position().epsilonEquals(player.target())) {
+      float angle = mapRenderer2.angle(player.position(), player.target());
+      player.setAngle(angle);
+    }
     //GridPoint2 position = new GridPoint2();
     //position.set((int) player.position().x, (int) player.position().y);
 
