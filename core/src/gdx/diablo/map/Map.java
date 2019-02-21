@@ -548,15 +548,6 @@ public class Map implements Disposable {
     }
   }
 
-  public boolean path(Vector3 src, Vector3 dst, Path path) {
-    //return new MapGraph(this).path(src, dst);
-    //return MapUtils.path(this, src, dst, new DefaultGraphPath<MapUtils.Point2>());
-    //long start = System.currentTimeMillis();
-    //...
-    //System.out.println("time = " + (System.currentTimeMillis() - start) + "ms");
-    return new MapPather(this).path(src, dst, path);
-  }
-
   private MapGraph mapGraph = new MapGraph(this);
   private IndexedAStarPathFinder<MapGraph.Point2> pathFinder = new IndexedAStarPathFinder<>(mapGraph, true);
 

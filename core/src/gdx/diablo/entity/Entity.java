@@ -455,24 +455,6 @@ public class Entity {
     label.draw(batch, 1);
   }
 
-  public boolean move() {
-    int x = Direction.getOffX(angle);
-    int y = Direction.getOffY(angle);
-    position.add(x, y, 0);
-    //if (position.epsilonEquals(target) || target.equals(Vector3.Zero)) {
-    //  if (path.getCount() > 0) {
-    //    Point2 point = path.get(0);
-    //    target.set(point.x, point.y, 0);
-    //  } else {
-    //    setMode("NU");
-    //  }
-    //}
-
-    //position.lerp(target, 1f);
-    //position.set(target);
-    return true;
-  }
-
   public boolean contains(Vector3 coords) {
     if (animation == null) return false;
     BBox box = animation.getBox();
