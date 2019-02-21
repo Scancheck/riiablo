@@ -8,7 +8,6 @@ import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.ScreenAdapter;
 import com.badlogic.gdx.assets.AssetDescriptor;
 import com.badlogic.gdx.audio.Sound;
-import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.GridPoint2;
@@ -44,7 +43,6 @@ import gdx.diablo.key.MappedKeyStateAdapter;
 import gdx.diablo.map.Map;
 import gdx.diablo.map.MapLoader;
 import gdx.diablo.map.MapRenderer;
-import gdx.diablo.map.MapRenderer2;
 import gdx.diablo.panel.CharacterPanel;
 import gdx.diablo.panel.ControlPanel;
 import gdx.diablo.panel.EscapePanel;
@@ -87,8 +85,7 @@ public class GameScreen extends ScreenAdapter implements LoadingScreen.Loadable 
 
   final AssetDescriptor<Map> mapDescriptor = new AssetDescriptor<>("Act 1", Map.class, MapLoader.MapParameters.of(0, 0, 0));
   Map map;
-  MapRenderer2 mapRenderer2;
-  OrthographicCamera camera;
+  MapRenderer mapRenderer;
   InputProcessor inputProcessorTest;
 
   public TextArea input;
@@ -308,20 +305,19 @@ public class GameScreen extends ScreenAdapter implements LoadingScreen.Loadable 
         switch (amount) {
           case -1:
             if (UIUtils.ctrl()) {
-              camera.zoom = Math.max(0.50f, camera.zoom - ZOOM_AMOUNT);
+              mapRenderer.zoom(Math.max(0.25f, mapRenderer.zoom() - ZOOM_AMOUNT));
             }
 
             break;
           case 1:
             if (UIUtils.ctrl()) {
-              camera.zoom = Math.min(5.0f, camera.zoom + ZOOM_AMOUNT);
+              mapRenderer.zoom(Math.min(2.50f, mapRenderer.zoom() + ZOOM_AMOUNT));
             }
 
             break;
           default:
         }
 
-        camera.update();
         return true;
       }
 
@@ -331,16 +327,10 @@ public class GameScreen extends ScreenAdapter implements LoadingScreen.Loadable 
           case Input.Keys.TAB:
             if (UIUtils.shift()) {
               MapRenderer.RENDER_DEBUG_WALKABLE = MapRenderer.RENDER_DEBUG_WALKABLE == 0 ? 1 : 0;
-              MapRenderer2.RENDER_DEBUG_WALKABLE = MapRenderer2.RENDER_DEBUG_WALKABLE == 0 ? 1 : 0;
             } else {
               MapRenderer.RENDER_DEBUG_GRID++;
               if (MapRenderer.RENDER_DEBUG_GRID > MapRenderer.DEBUG_GRID_MODES) {
                 MapRenderer.RENDER_DEBUG_GRID = 0;
-              }
-
-              MapRenderer2.RENDER_DEBUG_GRID++;
-              if (MapRenderer2.RENDER_DEBUG_GRID > MapRenderer2.DEBUG_GRID_MODES) {
-                MapRenderer2.RENDER_DEBUG_GRID = 0;
               }
             }
             return true;
@@ -415,25 +405,24 @@ public class GameScreen extends ScreenAdapter implements LoadingScreen.Loadable 
       }
     } else {
       if (Gdx.input.isButtonPressed(Input.Buttons.LEFT)) {
-        GridPoint2 coords = mapRenderer2.coords();
+        GridPoint2 coords = mapRenderer.coords();
         player.setPath(map, new Vector3(coords.x, coords.y, 0));
       }
     }
 
     player.update(delta);
     if (!player.position().epsilonEquals(player.target())) {
-      float angle = mapRenderer2.angle(player.position(), player.target());
+      float angle = mapRenderer.angle(player.position(), player.target());
       player.setAngle(angle);
     }
     //GridPoint2 position = new GridPoint2();
     //position.set((int) player.position().x, (int) player.position().y);
 
-    mapRenderer2.update();
+    mapRenderer.update();
 
-    b.setProjectionMatrix(camera.combined);
     b.begin();
     //map.draw(b, 0, 0, 30, 13, Diablo.VIRTUAL_WIDTH, Diablo.VIRTUAL_HEIGHT, 1.5f);
-    mapRenderer2.draw(delta);
+    mapRenderer.draw(delta);
     b.end();
 
     // pixel offset of subtile in world-space
@@ -446,14 +435,12 @@ public class GameScreen extends ScreenAdapter implements LoadingScreen.Loadable 
     //player.draw(b);
 
     Diablo.shapes.setAutoShapeType(true);
-    Diablo.shapes.setProjectionMatrix(camera.combined);
     Diablo.shapes.begin(ShapeRenderer.ShapeType.Line);
-    mapRenderer2.drawDebug(Diablo.shapes);
-    mapRenderer2.drawDebugPath(Diablo.shapes, player.path());
+    mapRenderer.drawDebug(Diablo.shapes);
+    mapRenderer.drawDebugPath(Diablo.shapes, player.path());
     player.drawDebug(Diablo.shapes);
     Diablo.shapes.end();
 
-    //b.setProjectionMatrix(camera.combined);
     //b.begin();
 
     //for (Player p : entities.values()) {
@@ -462,14 +449,6 @@ public class GameScreen extends ScreenAdapter implements LoadingScreen.Loadable 
 
     //b.end();
     b.setProjectionMatrix(Diablo.viewport.getCamera().combined);
-
-    //Diablo.shapes.setAutoShapeType(true);
-    //Diablo.shapes.setProjectionMatrix(camera.combined);
-    //Diablo.shapes.begin(ShapeRenderer.ShapeType.Line);
-    //mapRenderer.renderDebug(Diablo.shapes);
-    ////player.drawDebug(Diablo.shapes, spx, spy);
-    //player.drawDebug(Diablo.shapes);
-    //Diablo.shapes.end();
 
     stage.act();
     stage.draw();
@@ -481,25 +460,18 @@ public class GameScreen extends ScreenAdapter implements LoadingScreen.Loadable 
     Diablo.assets.get(windowopenDescriptor).play();
 
     map = Diablo.assets.get(mapDescriptor);
-    // FIXME: Below causes bug with debug text in MapRenderer, setting camera to screen dims fixes, but renders far too much on mobile
-    camera = new OrthographicCamera(Diablo.VIRTUAL_WIDTH, Diablo.VIRTUAL_HEIGHT);
-    //camera = new OrthographicCamera(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
-
-    mapRenderer2 = new MapRenderer2(Diablo.batch);
-    mapRenderer2.setMap(map);
-    mapRenderer2.setSrc(player);
-    mapRenderer2.setEntities(entities);
-    mapRenderer2.resize();
-
-    GridPoint2 origin = map.find(Map.ID.TOWN_ENTRY_1);
+    mapRenderer = new MapRenderer(Diablo.batch);
+    mapRenderer.setMap(map);
+    mapRenderer.setSrc(player);
+    mapRenderer.setEntities(entities);
     if (Gdx.app.getType() == Application.ApplicationType.Android) {
-      camera.zoom = 0.80f;
-      camera.update();
-      mapRenderer2.zoom(camera.zoom);
+      mapRenderer.zoom(0.80f);
     }
+    mapRenderer.resize();
 
     //character.x = origin.x;
     //character.y = origin.y;
+    GridPoint2 origin = map.find(Map.ID.TOWN_ENTRY_1);
     player.position().set(origin.x, origin.y, 0);
 
     Keys.Esc.addStateListener(mappedKeyStateListener);
